@@ -196,8 +196,8 @@ image::resources/images/graph1.png[]
 //output
 [source,cypher]
 ----
-{ parameters: { _id: '56299173867791a26a71a3ec', room: 'Auditorium'}}
-CREATE (c:Document:talks { parameters })
+{ params: { _id: '56299173867791a26a71a3ec', room: 'Auditorium'}}
+CREATE (c:Document:talks { params })
 ----
 
 And render as a graph.
