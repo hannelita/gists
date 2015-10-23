@@ -196,7 +196,7 @@ image::resources/images/graph1.png[]
 //output
 [source,cypher]
 ----
-CREATE (c:Document:talks{ '_id': '56299173867791a26a71a3ec', 'room': 'Auditorium'})
+CREATE (legis:Legislature { name: 'Sansad', desc: 'Parliament'})
 ----
 
 And render as a graph.
