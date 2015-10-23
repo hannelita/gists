@@ -195,11 +195,11 @@ image::resources/images/graph1.png[]
 //setup
 [source,cypher]
 ----
-{'parameters': {u'topics': [u'keynote', u'spring'], '_id': u'56299173867791a26a71a3ec', u'room': u'Auditorium', u'timeslot': u'Wed 29th, 09:30-10:30'}}
+{"parameters": {u'topics': [u'keynote', u'spring'], '_id': u'56299173867791a26a71a3ec', u'room': u'Auditorium', u'timeslot': u'Wed 29th, 09:30-10:30'}}
 CREATE (c:Document:`talks` {parameters})
-{'parameters': {u'abstract': u'Spring emerged as a core open source project in early 2003 and evolved to a broad portfolio of open source projects up until 2015.', '_id': u'56299173867791a26a71a3ec', u'title': u'12 Years of Spring: An Open Source Journey'}}
+{"parameters": {u'abstract': u'Spring emerged as a core open source project in early 2003 and evolved to a broad portfolio of open source projects up until 2015.', '_id': u'56299173867791a26a71a3ec', u'title': u'12 Years of Spring: An Open Source Journey'}}
 CREATE (c:Document:`session` {parameters})
-{'parameters': {u'bio': u'Juergen Hoeller is co-founder of the Spring Framework open source project.', u'twitter': u'https://twitter.com/springjuergen', '_id': u'56299173867791a26a71a3ec', u'name': u'Juergen Hoeller', u'picture': u'http://www.springio.net/wp-content/uploads/2014/11/juergen_hoeller-220x220.jpeg'}}
+{"parameters": {u'bio': u'Juergen Hoeller is co-founder of the Spring Framework open source project.', u'twitter': u'https://twitter.com/springjuergen', '_id': u'56299173867791a26a71a3ec', u'name': u'Juergen Hoeller', u'picture': u'http://www.springio.net/wp-content/uploads/2014/11/juergen_hoeller-220x220.jpeg'}}
 CREATE (c:Document:`speaker` {parameters})
 {'doc_id': u'56299173867791a26a71a3ec', 'explicit_id': u'56299173867791a26a71a3ec'}
 MATCH (a:`talks`), (b:`speaker`) WHERE a._id={doc_id} AND b._id ={explicit_id} CREATE (a)-[r:`talks_speaker`]->(b)
