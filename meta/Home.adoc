@@ -196,7 +196,7 @@ image::resources/images/graph1.png[]
 //output
 [source,cypher]
 ----
-{ parameters: { _id: '56299173867791a26a71a3ec', room: 'Auditorium'} }
+{ parameters: { _id: '56299173867791a26a71a3ec', room: 'Auditorium'}}
 CREATE (c:Document:talks { parameters })
 ----
 
