@@ -1,58 +1,211 @@
-= What is the Neo4j GraphGist Project? =
+= Neo4j Doc Manager
+Neo4j Team <michael.hunger@neotechnology.com>
+v1.0, 2015-08
+:toc:
+:toclevels: 6
 
-:neo4j-version: 2.1.0
-:author: Anders Nawroth
-:twitter: @nawroth
-:tags: domain:example
+:sectnums:
 
-image:https://dl.dropboxusercontent.com/u/14493611/neo4j-logo.png[]
+== Our Goal
 
-http://neo4j.com[Neo4j] GraphGists are an easy way to create and share documents containing not just prose, structure 
-and pictures but most importantly **example graph models and use-cases** expressed in Neo4j's query language http://docs.neo4j.org/refcard/2.1/[Cypher].
+=== TL;DR
 
-These documents are written in AsciiDoc -- the simple, textual markup language -- and rendered in your browser as rich and interactive web pages that you 
-can quickly evolve from describing simple howtos or questions to providing an extensive use-case specification.
+What's Neo4j Doc Manager? It is a tool that enables you to migrate existing documents into MongoDB to a Neo4j graph structure. You just run it in background and the information that is in MongoDB will be imported to a graph.
 
-To see the expressive power of this approach, here are some winners of our past community competitions:
+=== A little longer explanation
 
-== Examples
-[none]
-* **Identity and Access Management** link:./?4471127413fd724ed0a3[Entitlements and Access Control] by https://twitter.com/kennybastani[@kennybastani]
-* **Finance** link:./?github-neo4j-contrib%2Fgists%2F%2Fother%2FBankFraudDetection.adoc[Bank Fraud Detection] by https://twitter.com/kennybastani[@kennybastani]
-* **Sports** link:./?8019511[Alpine Skiing seasons] by https://twitter.com/pac_19[@pac_19] 
-* **Life Science** link:./?7968633[Pharmaceutical Drugs and their Targets] by https://twitter.com/joshkunken[@joshkunken]
-* **Resources** link:./?8141937[Piping Water] by https://twitter.com/shaundaley1[@shaundaley1]
-* **Retail** link:./?8139605[Single Malt Scotch Whisky] by https://twitter.com/patbaumgartner[@patbaumgartner]
-* **Telecommunications** link:./?8526106[Amazon Web Services Global Infrastructure Graph] by https://twitter.com/aidanjcasey[@aidanjcasey]
-* **Infrastructure** link:./?8635758[Roads, Nodes and Automobiles] by http://www.jacqui.tk[@tekiegirl]
-* **Recommendation** link:./?8173017[Movie Recommendations with k-NN and Cosine Similarity] by http://twitter.com/_nicolemargaret[@_nicolemargaret]
-* **Fun** link:./?6506717[Chess Games and Positions] by https://twitter.com/wefreema[@wefreema]
-* **One hundred more** examples can be found in the https://github.com/neo4j-contrib/graphgist/wiki[GraphGist Collection]
+Neo4j is an OLTP graph database which excels at querying data relationships, which is a weakness of other NoSQL and SQL solutions.  We created the Neo4j Doc Manager for the Mongo Connector to allow MongoDB developers to store JSON data in Mongo while querying the relationship between the data using Neo4j.  We call this polyglot persistence - using the database best suited for the type of data and querying your application requires.
 
-== Getting Started
+MongDB stores data as JSON documents, while Neo4j stores data as graphs.  In order to enable graph-based querying of Mongo data, we need to determine how to map between these two different data structures.  Our initial goal was to implement a default mapping plan, covering the most well-known cases. We wanted to follow convention instead of requiring configuration. We collected some generic Mongo Document structures based on community feedback and structured the mapping based on them. It's important to note that we are opened for further suggestions and improvements.
 
-=== Follow these easy steps
+image::resources/images/doc_to_graph.png[]
 
-. **Log into** your GitHub account
-. **Choose** one of the examples listed above, click the green **page source** button.
-. **Fork** the original GraphGist into your own account and **start to edit** the prose, images, setup and use-case Cypher queries.
-. **Paste** the Github Gist URL into the top right URL box of any GraphGist page and hit enter; your Gist will be loaded and rendered immediately.
-. **Reload** your GraphGist page whenever you made an update to your document.
-. **Share** your GraphGist with your colleagues, friends or us.
-  Hit the submit link in the footer, when you are ready to get your t-shirt reward.
+This project is based upon the link:https://github.com/10gen-labs/mongo-connector[Mongo Connector]. It provides a simple protocol to transfer data from MongoDB to another database. While Mongo publishes Doc Manager implementations for other databses, they did not provide an implementation for Neo4j.  You can grab more detailed information about **mongo-connector** into the official link:https://github.com/10gen-labs/mongo-connector/wiki[Project Wiki].
 
-++++
-<iframe src="//player.vimeo.com/video/74279113" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-++++
+The Mongo Connector requires creating a MongoDB link:http://docs.mongodb.org/manual/tutorial/deploy-replica-set/[replica set]. An **OplogThread** thread then will listen to all CUD actions occurring in MongoDB. The **mongo-connector** provides an interface to collect the events caught by the OplogThread. The communication interface is implemented into a structure called **DocManager**, which can properly receive and handle Mongo documents and information about the database and its collections.
 
+By extending the **DocManager** class, we have created a Configuration that interacts with Neo4j. Some methods are required to be implemented to keep Mongo Connector protocol consistent. The next section describes in detail how **neo4j_doc_manager** handles each of these methods.
+
+Detailed documentation for the *DocManager* superclass and its protocol can be found link:https://github.com/10gen-labs/mongo-connector/wiki/Writing-Your-Own-DocManager[here]
+
+== About Neo4j DocManager
+
+=== Setup
+
+==== Install neo4j-doc-manager
+
+The preferred method of installation is with the pip package manager:
+
+```
+pip install neo4j-doc-manager --pre
+```
+
+===== Alternate installation
+
+If you experience any issues with pip you may use the following installation method:
+
+First of all, install link:https://github.com/10gen-labs/mongo-connector[mongo-connector]. This can be easily done with the following command:
+
+```
+pip install mongo-connector
+```
+
+Now install **neo4j_doc_manager** by cloning this repository and setting the `PYTHONPATH` to it's local directory:
+
+```
+git clone https://github.com/neo4j-contrib/neo4j_doc_manager.git
+cd neo4j_doc_manager
+export PYTHONPATH=.
+```
+
+You also must install **py2neo**:
+
+```
+pip install py2neo
+```
+
+==== Start Neo4j and Mongo
+
+Ensure that you have a Neo4j instance up and running.
+
+If you have authentication enabled for Neo4j, be sure to set **NEO4J_AUTH** environment variable, containing your user and password. 
+
+```
+export NEO4J_AUTH=<user>:<password>
+```
+
+Ensure that mongo is running a *replica set*. To initiate a replica set start mongo with:
+
+```
+mongod --replSet myDevReplSet
+```
+
+Then open link:http://docs.mongodb.org/master/tutorial/getting-started-with-the-mongo-shell[mongo-shell] and run:
+
+```
+rs.initiate()
+```
+
+Please refer to link:https://github.com/10gen-labs/mongo-connector/wiki/FAQ[Mongo Connector FAQ] for more information.
+
+
+==== Start the Neo4j Doc Manager service
+
+To start the service, run the following command:
+
+```
+mongo-connector -m localhost:27017 -t http://localhost:7474/db/data -d neo4j_doc_manager
+```
+
+* **-m** provides Mongo endpoint
+* **-t** provides Neo4j endpoint. Be sure to specify the protocol (http).
+* **-d** specifies Neo4j Doc Manager.
+
+
+=== Methods
+
+==== Constructor
+
+By invoking **Neo4j Doc Manager** initialisation command with proper parameters ( `mongo-connector -m [mongo_url] -t [neo4j_server_url] -d neo4j_doc_manager` ), the **Neo4jDocManager** constructor is called.
+
+Constructor receives the following arguments:
+[source, python]
+----
+(self, url, auto_commit_interval=DEFAULT_COMMIT_INTERVAL,
+                 unique_key='_id', chunk_size=DEFAULT_MAX_BULK, **kwargs)
+
+----
+
+**url** corresponds the address where a Neo4j server instance is running.
+
+**unique_key** corresponds to the identifier refers to the unique key that is being used in Mongo. Default value is *_id* .
+
+===== Authentication
+
+If you have authentication enabled for Neo4j, be sure to set **NEO4J_AUTH** environment variable, containing your user and password. 
+
+```
+export NEO4J_AUTH=<user>:<password>
+```
+
+If authentication is not enabled on Neo4j, no action is required. To disable authentication on Neo4j, go to Neo4j install directory, and then edit __conf/neo4j-server.properties__ :
+
+```
+dbms.security.auth_enabled=false
+```
+
+==== Upsert
+
+Upsert consists into the method that creates new nodes and relationships given a Mongo Document. The method signature is described as below:
+[source, python]
+----
+upsert(self, doc, namespace, timestamp):
+----
+
+Basically we **translate every element of a collection into a new node**. Since the elements can be composite, we have adopted some patterns to properly convert each document into a group of nodes and relationships:
+
+* Each new node will be receive *Document* Label
+* Also the document type (the referred collection from the incoming document) will also be inserted as a node label
+* Document id will be propagated to the node. That means node will have the same '_id' that Mongo Document has.
+* If the document contains the elements below, they will recursively be transformed into new nodes as well
+  ** a nested document
+  ** an array of documents
+* All the other types of data into the document will be translated into node properties.
+
+In terms of relationships, every time we find composite documents, we will stablish a relationship between the root document and the nested document.
+
+To clarify our scenario, let's imagine an empty MongoDB instance.
+Let's also consider an empty instance of Neo4j.
+
+===== Simple case
+
+We then run the following statement into *mongo*, to insert a talk into a collection of talks:
+
+[source]
+----
+db.talks.insert(  { "session": { "title": "12 Years of Spring: An Open Source Journey", "abstract": "Spring emerged as a core open source project in early 2003 and evolved to a broad portfolio of open source projects up until 2015." }, "topics":  ["keynote", "spring"], "room": "Auditorium", "timeslot": "Wed 29th, 09:30-10:30", "speaker": { "name": "Juergen Hoeller", "bio": "Juergen Hoeller is co-founder of the Spring Framework open source project.", "twitter": "https://twitter.com/springjuergen", "picture": "http://www.springio.net/wp-content/uploads/2014/11/juergen_hoeller-220x220.jpeg" } } );
+----
+
+This will insert the following document into Mongo:
+[source, json]
+----
+{
+  "session": {
+    "title": "12 Years of Spring: An Open Source Journey",
+    "abstract": "Spring emerged as a core open source project in early 2003 and evolved to a broad portfolio of open source projects up until 2015."
+  },
+  "topics":  ["keynote", "spring"], 
+  "room": "Auditorium",
+  "timeslot": "Wed 29th, 09:30-10:30",
+  "speaker": {
+    "name": "Juergen Hoeller",
+    "bio": "Juergen Hoeller is co-founder of the Spring Framework open source project.",
+    "twitter": "https://twitter.com/springjuergen",
+    "picture": "http://www.springio.net/wp-content/uploads/2014/11/juergen_hoeller-220x220.jpeg"
+  }
+}
+----
+
+This will be reflected as follows into Neo4j:
+
+image::resources/images/graph1.png[]
 
 === Setup a Graph to show you and your Likes
 
 //setup
 [source,cypher]
 ----
-CREATE (you:Person {name:"You"})-[like:LIKE]->(us:Database:NoSql:Graph {name:"Neo4j" })
-RETURN you, like, us
+{'parameters': {u'topics': [u'keynote', u'spring'], '_id': u'56299173867791a26a71a3ec', u'room': u'Auditorium', u'timeslot': u'Wed 29th, 09:30-10:30'}}
+CREATE (c:Document:`talks` {parameters})
+{'parameters': {u'abstract': u'Spring emerged as a core open source project in early 2003 and evolved to a broad portfolio of open source projects up until 2015.', '_id': u'56299173867791a26a71a3ec', u'title': u'12 Years of Spring: An Open Source Journey'}}
+CREATE (c:Document:`session` {parameters})
+{'parameters': {u'bio': u'Juergen Hoeller is co-founder of the Spring Framework open source project.', u'twitter': u'https://twitter.com/springjuergen', '_id': u'56299173867791a26a71a3ec', u'name': u'Juergen Hoeller', u'picture': u'http://www.springio.net/wp-content/uploads/2014/11/juergen_hoeller-220x220.jpeg'}}
+CREATE (c:Document:`speaker` {parameters})
+{'doc_id': u'56299173867791a26a71a3ec', 'explicit_id': u'56299173867791a26a71a3ec'}
+MATCH (a:`talks`), (b:`speaker`) WHERE a._id={doc_id} AND b._id ={explicit_id} CREATE (a)-[r:`talks_speaker`]->(b)
+{'doc_id': u'56299173867791a26a71a3ec', 'explicit_id': u'56299173867791a26a71a3ec'}
+MATCH (a:`talks`), (b:`session`) WHERE a._id={doc_id} AND b._id ={explicit_id} CREATE (a)-[r:`talks_session`]->(b)
+MATCH n RETURN n
 ----
 
 And render as a graph.
