@@ -192,7 +192,9 @@ image::resources/images/graph1.png[]
 
 === Setup a Graph to show you and your Likes
 
+//hide
 //setup
+//output
 [source,cypher]
 ----
 CREATE (c:Document:`talks`{ 'topics': ['keynote', 'spring'], '_id': '56299173867791a26a71a3ec', 'room': 'Auditorium', 'timeslot': 'Wed 29th, 09:30-10:30' })
@@ -205,19 +207,3 @@ And render as a graph.
 
 === Now query the graph to show all the things you like
 
-[source,cypher]
-----
-MATCH (you:Person {name:"You"})-[like:LIKE]->(liked)
-RETURN you.name AS who, type(like) AS how, liked.name AS what
-----
-
-And render as a table.
-
-//table
-
-NOTE: This document is a GraphGist itself, so you can use the green https://github.com/neo4j-contrib/gists/blob/master/meta/Home.adoc[Page Source] button on top of the page to see the original AsciiDoc document.
-
-We'd love to get your feedback, so feel free to write us at *docs at neo4j.org* or comment in the section below.
-
-// * link:./?github-neo4j-contrib%2Fgists%2F%2Fmeta%2FSimple.adoc[A simple GraphGist]
-// * link:./?github-neo4j-contrib%2Fgists%2F%2Fmeta%2FHowTo.adoc[How to create a GraphGist]
