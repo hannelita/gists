@@ -195,7 +195,7 @@ image::resources/images/graph1.png[]
 //setup
 [source,cypher]
 ----
-CREATE (c:Document:talks { "topics": ["keynote", "spring"], "_id": "56299173867791a26a71a3ec", "room": "Auditorium", "timeslot": "Wed 29th, 09:30-10:30" } )
+CREATE (c:Document:talks { "topics": ["keynote", "spring"], "_id": "56299173867791a26a71a3ec", "room": "Auditorium", "timeslot": "Wed 29th, 09:30-10:30" })
 RETURN c
 ----
 
