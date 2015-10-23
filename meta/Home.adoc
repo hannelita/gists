@@ -196,7 +196,7 @@ image::resources/images/graph1.png[]
 //output
 [source,cypher]
 ----
-CREATE (legis:Legislature { name: 'Sansad', desc: 'Parliament'})
+CREATE (c:Document:talks { name: 'Sansad', desc: 'Parliament'})
 ----
 
 And render as a graph.
